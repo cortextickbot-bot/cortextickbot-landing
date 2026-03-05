@@ -3,1415 +3,160 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cortex TickBot — Professional XAUUSD Automated Trading</title>
-<meta name="description" content="Cortex TickBot is a professional MetaTrader 5 Expert Advisor for automated XAUUSD gold trading. Watch live performance. Contact us on Telegram.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<title>Cortex TickBot — Live XAUUSD Trading</title>
+<meta name="description" content="Cortex TickBot automated gold trading. View live performance and join our Telegram.">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg: #060608;
-  --bg2: #0C0C10;
-  --bg3: #111116;
-  --bg4: #18181F;
-  --border: rgba(255,255,255,0.06);
-  --border-gold: rgba(212,175,55,0.25);
-  --gold: #D4AF37;
-  --gold2: #F0CC5A;
-  --gold3: #8B6914;
-  --green: #10B981;
-  --red: #EF4444;
-  --text: #F0F0F0;
-  --text2: #9A9AB0;
-  --text3: #55556A;
-  --white: #FFFFFF;
-}
-
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; font-size: 16px; }
-
+* { margin: 0; padding: 0; box-sizing: border-box; }
 body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  overflow-x: hidden;
-  -webkit-font-smoothing: antialiased;
-}
-
-/* ─── GRID BACKGROUND ─── */
-.grid-bg {
-  position: fixed;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(212,175,55,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(212,175,55,0.03) 1px, transparent 1px);
-  background-size: 60px 60px;
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* ─── NOISE OVERLAY ─── */
-.noise {
-  position: fixed;
-  inset: 0;
-  opacity: 0.025;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* ─── NAV ─── */
-nav {
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  z-index: 999;
-  padding: 0 60px;
-  height: 68px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: rgba(6,6,8,0.88);
-  backdrop-filter: blur(24px);
-  border-bottom: 1px solid var(--border);
-}
-
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  text-decoration: none;
-}
-
-.logo-icon {
-  width: 34px;
-  height: 34px;
-  background: linear-gradient(135deg, var(--gold), var(--gold3));
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'Syne', sans-serif;
-  font-weight: 800;
-  font-size: 14px;
-  color: #000;
-  letter-spacing: -0.5px;
-}
-
-.logo-text {
-  font-family: 'Syne', sans-serif;
-  font-weight: 700;
-  font-size: 17px;
-  color: var(--white);
-  letter-spacing: -0.3px;
-}
-
-.logo-text span { color: var(--gold); }
-
-.nav-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.nav-pill {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  color: var(--green);
-  background: rgba(16,185,129,0.08);
-  border: 1px solid rgba(16,185,129,0.2);
-  padding: 5px 12px;
-  border-radius: 100px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.nav-pill::before {
-  content: '';
-  width: 6px; height: 6px;
-  background: var(--green);
-  border-radius: 50%;
-  animation: blink 1.8s infinite;
-}
-
-@keyframes blink {
-  0%,100% { opacity:1; } 50% { opacity:0.3; }
-}
-
-.nav-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--gold);
-  color: #000;
-  font-weight: 600;
-  font-size: 13px;
-  padding: 9px 20px;
-  border-radius: 6px;
-  text-decoration: none;
-  transition: all 0.2s;
-  letter-spacing: 0.2px;
-}
-
-.nav-btn:hover {
-  background: var(--gold2);
-  transform: translateY(-1px);
-  box-shadow: 0 8px 24px rgba(212,175,55,0.25);
-}
-
-/* ─── TICKER ─── */
-.ticker {
-  position: fixed;
-  top: 68px; left: 0; right: 0;
-  z-index: 998;
-  background: var(--bg2);
-  border-bottom: 1px solid var(--border);
-  height: 36px;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-}
-
-.ticker-track {
-  display: flex;
-  gap: 48px;
-  animation: scroll 28s linear infinite;
-  white-space: nowrap;
-  align-items: center;
-}
-
-.ticker-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  flex-shrink: 0;
-}
-
-.t-sym { color: var(--gold); font-weight: 500; }
-.t-val { color: var(--text2); }
-.t-up { color: var(--green); }
-.t-sep { color: var(--border); margin: 0 8px; }
-
-@keyframes scroll {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
-
-/* ─── HERO ─── */
-.hero {
+  background: #0A0A0C;
+  color: #F0F0F0;
+  font-family: 'Inter', sans-serif;
   min-height: 100vh;
-  padding: 160px 60px 80px;
-  position: relative;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
-  gap: 60px;
-  align-items: center;
-  max-width: 1280px;
-  margin: 0 auto;
-}
-
-.hero-glow {
-  position: absolute;
-  top: 10%;
-  right: 5%;
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(212,175,55,0.07) 0%, transparent 65%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-.hero-glow2 {
-  position: absolute;
-  bottom: 0;
-  left: -5%;
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(16,185,129,0.04) 0%, transparent 65%);
-  pointer-events: none;
-}
-
-.hero-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--gold);
-  background: rgba(212,175,55,0.07);
-  border: 1px solid var(--border-gold);
-  padding: 7px 16px;
-  border-radius: 100px;
-  margin-bottom: 28px;
-  animation: fadeUp 0.5s ease both;
-}
-
-h1 {
-  font-family: 'Syne', sans-serif;
-  font-size: clamp(50px, 5.5vw, 80px);
-  font-weight: 800;
-  line-height: 1.0;
-  letter-spacing: -2px;
-  margin-bottom: 24px;
-  animation: fadeUp 0.5s 0.08s ease both;
-}
-
-h1 em {
-  font-style: normal;
-  background: linear-gradient(135deg, var(--gold) 0%, var(--gold2) 50%, var(--gold) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.hero-desc {
-  font-size: 16px;
-  color: var(--text2);
-  line-height: 1.75;
-  max-width: 480px;
-  margin-bottom: 44px;
-  font-weight: 300;
-  animation: fadeUp 0.5s 0.16s ease both;
-}
-
-.hero-btns {
-  display: flex;
-  gap: 14px;
-  flex-wrap: wrap;
-  animation: fadeUp 0.5s 0.24s ease both;
-}
-
-.btn-gold {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  background: linear-gradient(135deg, var(--gold), #B8960C);
-  color: #000;
-  font-weight: 700;
-  font-size: 14px;
-  padding: 14px 28px;
-  border-radius: 8px;
-  text-decoration: none;
-  transition: all 0.25s;
-  letter-spacing: 0.2px;
-  box-shadow: 0 4px 24px rgba(212,175,55,0.2);
-}
-
-.btn-gold:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 40px rgba(212,175,55,0.35);
-  background: linear-gradient(135deg, var(--gold2), var(--gold));
-}
-
-.btn-outline {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  background: transparent;
-  color: var(--text);
-  font-weight: 500;
-  font-size: 14px;
-  padding: 14px 28px;
-  border-radius: 8px;
-  text-decoration: none;
-  transition: all 0.25s;
-  border: 1px solid var(--border);
-}
-
-.btn-outline:hover {
-  border-color: var(--border-gold);
-  color: var(--gold);
-  background: rgba(212,175,55,0.04);
-}
-
-/* ─── HERO RIGHT — VIDEO + CARD ─── */
-.hero-right {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  animation: fadeUp 0.6s 0.2s ease both;
-  position: relative;
-  z-index: 1;
 }
-
-.video-card {
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  overflow: hidden;
-  position: relative;
-  box-shadow: 0 40px 100px rgba(0,0,0,0.6);
-}
-
-.video-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(212,175,55,0.06) 0%, transparent 50%);
-  pointer-events: none;
-  z-index: 1;
-}
-
-.video-top-bar {
+nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 18px;
-  border-bottom: 1px solid var(--border);
-  background: var(--bg4);
+  padding: 20px 32px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
 }
-
-.video-dots {
-  display: flex;
-  gap: 6px;
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-box {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, #D4AF37, #8B6914);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 13px; color: #000;
 }
-
-.dot { width: 10px; height: 10px; border-radius: 50%; }
-.dot-r { background: #FF5F57; }
-.dot-y { background: #FEBC2E; }
-.dot-g { background: #28C840; }
-
-.video-title-bar {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  color: var(--text3);
+.logo-name { font-size: 16px; font-weight: 700; color: #fff; }
+.logo-name span { color: #D4AF37; }
+.live-badge {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(16,185,129,0.1);
+  border: 1px solid rgba(16,185,129,0.25);
+  color: #10B981; font-size: 12px; font-weight: 500;
+  padding: 6px 12px; border-radius: 100px;
 }
-
-.video-live {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  color: var(--green);
+.live-dot {
+  width: 7px; height: 7px;
+  background: #10B981; border-radius: 50%;
+  animation: pulse 1.8s infinite;
 }
-
-.video-live::before {
-  content: '';
-  width: 6px; height: 6px;
-  background: var(--green);
-  border-radius: 50%;
-  animation: blink 1.5s infinite;
+@keyframes pulse {
+  0%,100% { opacity:1; transform:scale(1); }
+  50% { opacity:0.4; transform:scale(1.2); }
 }
-
-.video-embed {
-  aspect-ratio: 9/16;
-  max-height: 420px;
-  background: var(--bg2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  overflow: hidden;
-}
-
-.video-embed iframe {
-  width: 100%;
-  height: 100%;
-  border: none;
-  display: block;
-}
-
-/* Animated chart placeholder */
-.chart-placeholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-  padding: 32px;
-  background: linear-gradient(160deg, var(--bg3) 0%, var(--bg2) 100%);
-}
-
-.placeholder-candles {
-  display: flex;
-  align-items: flex-end;
-  gap: 5px;
-  height: 100px;
-}
-
-.candle {
-  width: 14px;
-  border-radius: 2px;
-  position: relative;
-  animation: candleAnim 3s ease-in-out infinite;
-}
-
-.candle.up { background: var(--green); }
-.candle.dn { background: var(--red); }
-
-@keyframes candleAnim {
-  0%, 100% { transform: scaleY(1); }
-  50% { transform: scaleY(0.85); }
-}
-
-.placeholder-text {
-  text-align: center;
-}
-
-.placeholder-text h4 {
-  font-family: 'Syne', sans-serif;
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text);
-  margin-bottom: 6px;
-}
-
-.placeholder-text p {
-  font-size: 12px;
-  color: var(--text3);
-  line-height: 1.5;
-}
-
-.replace-note {
-  display: inline-block;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  color: var(--gold);
-  background: rgba(212,175,55,0.08);
-  border: 1px solid var(--border-gold);
-  padding: 4px 10px;
-  border-radius: 4px;
-  margin-top: 10px;
-}
-
-/* Mini stats below video */
-.mini-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-}
-
-.mini-stat {
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 14px 16px;
-  transition: border-color 0.2s;
-}
-
-.mini-stat:hover { border-color: var(--border-gold); }
-
-.mini-stat-val {
-  font-family: 'Syne', sans-serif;
-  font-size: 20px;
-  font-weight: 800;
-  color: var(--gold2);
-  margin-bottom: 3px;
-}
-
-.mini-stat-label {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
-  color: var(--text3);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-/* ─── STATS STRIP ─── */
-.stats-strip {
-  position: relative;
-  z-index: 1;
-  background: var(--bg2);
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-}
-
-.stat-block {
-  padding: 44px 48px;
-  border-right: 1px solid var(--border);
-  position: relative;
-  overflow: hidden;
-  transition: background 0.3s;
-}
-
-.stat-block:last-child { border-right: none; }
-.stat-block:hover { background: var(--bg3); }
-
-.stat-block::after {
-  content: '';
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--gold), transparent);
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.stat-block:hover::after { opacity: 1; }
-
-.stat-num {
-  font-family: 'Syne', sans-serif;
-  font-size: 42px;
-  font-weight: 800;
-  letter-spacing: -1px;
-  line-height: 1;
-  margin-bottom: 8px;
-  color: var(--white);
-}
-
-.stat-num.gold { color: var(--gold2); }
-.stat-num.green { color: var(--green); }
-
-.stat-desc {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  color: var(--text3);
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  line-height: 1.5;
-}
-
-/* ─── SECTION COMMONS ─── */
-.section {
-  position: relative;
-  z-index: 1;
-  padding: 100px 60px;
-  max-width: 1280px;
-  margin: 0 auto;
-}
-
-.section-eyebrow {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 18px;
-}
-
-.eyebrow-line {
-  width: 32px;
-  height: 2px;
-  background: var(--gold);
-  border-radius: 2px;
-}
-
-.eyebrow-text {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 2.5px;
-  color: var(--gold);
-}
-
-.section-h2 {
-  font-family: 'Syne', sans-serif;
-  font-size: clamp(34px, 3.5vw, 52px);
-  font-weight: 800;
-  letter-spacing: -1.5px;
-  line-height: 1.1;
-  margin-bottom: 16px;
-}
-
-.section-sub {
-  font-size: 16px;
-  color: var(--text2);
-  font-weight: 300;
-  line-height: 1.7;
-  max-width: 520px;
-  margin-bottom: 56px;
-}
-
-/* ─── PERFORMANCE ─── */
-.perf-wrap {
-  background: var(--bg2);
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-}
-
-.perf-inner {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 100px 60px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 80px;
-  align-items: start;
-}
-
-.perf-chart-box {
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  overflow: hidden;
-}
-
-.chart-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 20px 24px;
-  border-bottom: 1px solid var(--border);
-}
-
-.chart-header-left {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.chart-sym {
-  font-family: 'Syne', sans-serif;
-  font-weight: 700;
-  font-size: 16px;
-  color: var(--white);
-}
-
-.chart-period {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  color: var(--text3);
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-}
-
-.chart-return {
-  font-family: 'Syne', sans-serif;
-  font-weight: 800;
-  font-size: 24px;
-  color: var(--green);
-}
-
-.chart-body {
-  padding: 24px;
-}
-
-.bars-container {
-  display: flex;
-  align-items: flex-end;
-  gap: 6px;
-  height: 180px;
-  margin-bottom: 8px;
-}
-
-.bar-col {
+.hero {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 6px;
-  height: 100%;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 60px 24px 40px; text-align: center;
 }
-
-.bar-fill {
-  width: 100%;
-  border-radius: 4px 4px 0 0;
-  background: linear-gradient(180deg, var(--gold2) 0%, var(--gold3) 100%);
-  transition: opacity 0.2s;
-  min-height: 6px;
-  position: relative;
+h1 {
+  font-size: clamp(36px, 8vw, 64px);
+  font-weight: 800; line-height: 1.1; letter-spacing: -1.5px;
+  margin-bottom: 16px; color: #fff;
 }
-
-.bar-fill:hover {
-  opacity: 0.8;
-  cursor: default;
+h1 span {
+  background: linear-gradient(135deg, #D4AF37, #F0CC5A);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
-
-.bar-fill::after {
-  content: attr(data-val);
-  position: absolute;
-  top: -22px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
-  color: var(--gold2);
-  white-space: nowrap;
-  opacity: 0;
-  transition: opacity 0.2s;
+.subtitle {
+  font-size: clamp(15px, 3vw, 18px); color: #888; font-weight: 400;
+  line-height: 1.6; max-width: 440px; margin: 0 auto 48px;
 }
-
-.bar-fill:hover::after { opacity: 1; }
-
-.bar-month {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
-  color: var(--text3);
-  text-transform: uppercase;
+.cards {
+  display: flex; flex-direction: column; gap: 14px;
+  width: 100%; max-width: 440px; margin: 0 auto;
 }
-
-.chart-footer {
-  padding: 16px 24px;
-  border-top: 1px solid var(--border);
-  display: flex;
-  gap: 24px;
+.card {
+  display: flex; align-items: center; gap: 16px;
+  padding: 20px 24px; border-radius: 14px; text-decoration: none;
+  transition: all 0.2s; border: 1px solid transparent; text-align: left;
 }
-
-.chart-leg {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  color: var(--text3);
+.card-investor { background: linear-gradient(135deg, #D4AF37 0%, #B8960C 100%); }
+.card-investor:hover { transform: translateY(-2px); box-shadow: 0 16px 48px rgba(212,175,55,0.3); }
+.card-channel { background: rgba(39,156,217,0.1); border-color: rgba(39,156,217,0.25); color: #fff; }
+.card-channel:hover { background: rgba(39,156,217,0.16); border-color: rgba(39,156,217,0.4); transform: translateY(-2px); }
+.card-dm { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); color: #fff; }
+.card-dm:hover { background: rgba(255,255,255,0.07); border-color: rgba(212,175,55,0.3); transform: translateY(-2px); }
+.card-icon {
+  width: 44px; height: 44px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0;
 }
-
-.leg-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 2px;
-  background: var(--gold);
-}
-
-/* Perf right side */
-.perf-right { display: flex; flex-direction: column; gap: 24px; }
-
-.perf-highlight {
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 28px 30px;
-  position: relative;
-  overflow: hidden;
-  transition: border-color 0.3s;
-}
-
-.perf-highlight:hover { border-color: var(--border-gold); }
-
-.perf-highlight::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; bottom: 0;
-  width: 3px;
-  background: linear-gradient(180deg, var(--gold), var(--gold3));
-  border-radius: 3px 0 0 3px;
-}
-
-.ph-label {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  color: var(--text3);
-  margin-bottom: 8px;
-}
-
-.ph-val {
-  font-family: 'Syne', sans-serif;
-  font-size: 28px;
-  font-weight: 800;
-  color: var(--white);
-  margin-bottom: 6px;
-  letter-spacing: -0.5px;
-}
-
-.ph-val span { color: var(--green); }
-
-.ph-desc {
-  font-size: 13px;
-  color: var(--text2);
-  line-height: 1.6;
-}
-
-/* ─── HOW IT WORKS ─── */
-.steps-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-}
-
-.step-card {
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 36px 32px;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s;
-}
-
-.step-card:hover {
-  border-color: var(--border-gold);
-  transform: translateY(-4px);
-  box-shadow: 0 24px 60px rgba(0,0,0,0.4);
-}
-
-.step-num-bg {
-  position: absolute;
-  top: -10px;
-  right: 20px;
-  font-family: 'Syne', sans-serif;
-  font-size: 100px;
-  font-weight: 800;
-  color: rgba(212,175,55,0.04);
-  line-height: 1;
-  pointer-events: none;
-}
-
-.step-icon-wrap {
-  width: 52px;
-  height: 52px;
-  background: rgba(212,175,55,0.08);
-  border: 1px solid var(--border-gold);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-  margin-bottom: 22px;
-}
-
-.step-card h3 {
-  font-family: 'Syne', sans-serif;
-  font-weight: 700;
-  font-size: 18px;
-  letter-spacing: -0.4px;
-  margin-bottom: 12px;
-  color: var(--white);
-}
-
-.step-card p {
-  font-size: 14px;
-  color: var(--text2);
-  line-height: 1.75;
-  font-weight: 300;
-}
-
-/* ─── CTA SECTION ─── */
-.cta-wrap {
-  position: relative;
-  z-index: 1;
-  overflow: hidden;
-  background: linear-gradient(135deg, var(--bg2) 0%, var(--bg) 100%);
-  border-top: 1px solid var(--border);
-}
-
-.cta-inner {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 120px 60px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 80px;
-  align-items: center;
-}
-
-.cta-glow {
-  position: absolute;
-  top: 50%;
-  left: 35%;
-  transform: translate(-50%, -50%);
-  width: 700px;
-  height: 700px;
-  background: radial-gradient(circle, rgba(212,175,55,0.05) 0%, transparent 65%);
-  pointer-events: none;
-}
-
-.cta-left h2 {
-  font-family: 'Syne', sans-serif;
-  font-size: clamp(36px, 4vw, 56px);
-  font-weight: 800;
-  letter-spacing: -1.5px;
-  line-height: 1.05;
-  margin-bottom: 20px;
-}
-
-.cta-left h2 em {
-  font-style: normal;
-  color: var(--gold2);
-}
-
-.cta-left p {
-  font-size: 16px;
-  color: var(--text2);
-  font-weight: 300;
-  line-height: 1.7;
-  margin-bottom: 40px;
-  max-width: 440px;
-}
-
-.cta-cards {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.cta-card {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 22px 24px;
-  text-decoration: none;
-  transition: all 0.25s;
-  position: relative;
-  overflow: hidden;
-}
-
-.cta-card:hover {
-  border-color: var(--border-gold);
-  transform: translateX(6px);
-  box-shadow: 0 16px 48px rgba(0,0,0,0.4);
-}
-
-.cta-card-icon {
-  width: 50px;
-  height: 50px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-  flex-shrink: 0;
-}
-
-.tg-icon { background: rgba(39,156,217,0.12); border: 1px solid rgba(39,156,217,0.2); }
-.dm-icon { background: rgba(212,175,55,0.1); border: 1px solid var(--border-gold); }
-
-.cta-card-text { flex: 1; }
-
-.cta-card-title {
-  font-family: 'Syne', sans-serif;
-  font-weight: 700;
-  font-size: 16px;
-  color: var(--white);
-  margin-bottom: 3px;
-}
-
-.cta-card-desc {
-  font-size: 13px;
-  color: var(--text3);
-}
-
-.cta-card-arrow {
-  color: var(--text3);
-  font-size: 18px;
-  transition: all 0.2s;
-}
-
-.cta-card:hover .cta-card-arrow {
-  color: var(--gold);
-  transform: translateX(4px);
-}
-
-/* ─── DISCLAIMER ─── */
+.card-investor .card-icon { background: rgba(0,0,0,0.15); }
+.card-channel .card-icon { background: rgba(39,156,217,0.15); }
+.card-dm .card-icon { background: rgba(255,255,255,0.06); }
+.card-text { flex: 1; }
+.card-title { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
+.card-investor .card-title { color: #000; }
+.card-desc { font-size: 13px; opacity: 0.65; }
+.card-investor .card-desc { color: #000; }
+.card-arrow { font-size: 18px; opacity: 0.5; transition: all 0.2s; }
+.card:hover .card-arrow { opacity: 1; transform: translateX(3px); }
+.card-investor .card-arrow { color: #000; }
 footer {
-  position: relative;
-  z-index: 1;
-  background: var(--bg2);
-  border-top: 1px solid var(--border);
-  padding: 40px 60px;
+  padding: 24px 32px; border-top: 1px solid rgba(255,255,255,0.05); text-align: center;
 }
-
-.footer-inner {
-  max-width: 1280px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.footer-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.footer-logo {
-  font-family: 'Syne', sans-serif;
-  font-weight: 800;
-  font-size: 15px;
-  color: var(--text3);
-  letter-spacing: -0.3px;
-}
-
-.footer-links {
-  display: flex;
-  gap: 24px;
-}
-
-.footer-links a {
-  font-size: 13px;
-  color: var(--text3);
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.footer-links a:hover { color: var(--gold); }
-
-.disclaimer-box {
-  background: rgba(255,255,255,0.02);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 20px 24px;
-}
-
-.disclaimer-title {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  color: var(--text3);
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.disclaimer-title::before {
-  content: '⚠';
-  font-size: 11px;
-}
-
-.disclaimer-text {
-  font-size: 11px;
-  color: var(--text3);
-  line-height: 1.85;
-  font-family: 'JetBrains Mono', monospace;
-}
-
-/* ─── ANIMATIONS ─── */
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* ─── RESPONSIVE ─── */
-@media (max-width: 960px) {
-  nav { padding: 0 20px; }
-  .nav-pill { display: none; }
-  .hero { grid-template-columns: 1fr; padding: 140px 20px 60px; gap: 40px; }
-  .hero-glow, .hero-glow2 { display: none; }
-  .stats-strip { grid-template-columns: repeat(2,1fr); }
-  .stat-block { padding: 28px 24px; }
-  .stat-num { font-size: 32px; }
-  .section { padding: 60px 20px; }
-  .perf-inner { grid-template-columns: 1fr; padding: 60px 20px; gap: 40px; }
-  .steps-grid { grid-template-columns: 1fr; }
-  .cta-inner { grid-template-columns: 1fr; padding: 60px 20px; }
-  footer { padding: 32px 20px; }
-  .footer-top { flex-direction: column; gap: 16px; align-items: flex-start; }
+.disclaimer { font-size: 11px; color: #333; line-height: 1.7; max-width: 560px; margin: 0 auto; }
+@media (max-width: 480px) {
+  nav { padding: 16px 20px; }
+  .logo-name { display: none; }
+  .hero { padding: 40px 20px 32px; }
 }
 </style>
 </head>
 <body>
-
-<div class="grid-bg"></div>
-<div class="noise"></div>
-
-<!-- NAV -->
 <nav>
-  <a href="#" class="logo">
-    <div class="logo-icon">CT</div>
-    <div class="logo-text">Cortex <span>TickBot</span></div>
-  </a>
-  <div class="nav-right">
-    <div class="nav-pill">Live · XAUUSD</div>
-    <a href="https://t.me/+2O3_XlJrRSkxOGVl" target="_blank" class="nav-btn">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
-      Join Channel
-    </a>
+  <div class="logo">
+    <div class="logo-box">CT</div>
+    <div class="logo-name">Cortex <span>TickBot</span></div>
+  </div>
+  <div class="live-badge">
+    <div class="live-dot"></div>
+    Live
   </div>
 </nav>
-
-<!-- LIVE TICKER -->
-<div class="ticker">
-  <div class="ticker-track">
-    <div class="ticker-item"><span class="t-sym">XAUUSD</span><span class="t-up">▲ Active</span></div>
-    <div class="ticker-item t-sep">|</div>
-    <div class="ticker-item"><span class="t-sym">BACKTEST</span><span class="t-val">Jan–Nov 2025</span><span class="t-up">+23.59%</span></div>
-    <div class="ticker-item t-sep">|</div>
-    <div class="ticker-item"><span class="t-sym">GRID SPACING</span><span class="t-val">$2 / Level</span></div>
-    <div class="ticker-item t-sep">|</div>
-    <div class="ticker-item"><span class="t-sym">STRATEGY</span><span class="t-val">Phase 1: WA+$2 · Phase 2: 100 USC</span></div>
-    <div class="ticker-item t-sep">|</div>
-    <div class="ticker-item"><span class="t-sym">PLATFORM</span><span class="t-val">MetaTrader 5 Expert Advisor</span></div>
-    <div class="ticker-item t-sep">|</div>
-    <div class="ticker-item"><span class="t-sym">ASSET</span><span class="t-val">Gold / XAUUSD</span></div>
-    <div class="ticker-item t-sep">|</div>
-    <!-- duplicate for loop -->
-    <div class="ticker-item"><span class="t-sym">XAUUSD</span><span class="t-up">▲ Active</span></div>
-    <div class="ticker-item t-sep">|</div>
-    <div class="ticker-item"><span class="t-sym">BACKTEST</span><span class="t-val">Jan–Nov 2025</span><span class="t-up">+23.59%</span></div>
-    <div class="ticker-item t-sep">|</div>
-    <div class="ticker-item"><span class="t-sym">GRID SPACING</span><span class="t-val">$2 / Level</span></div>
-    <div class="ticker-item t-sep">|</div>
-    <div class="ticker-item"><span class="t-sym">STRATEGY</span><span class="t-val">Phase 1: WA+$2 · Phase 2: 100 USC</span></div>
-    <div class="ticker-item t-sep">|</div>
-    <div class="ticker-item"><span class="t-sym">PLATFORM</span><span class="t-val">MetaTrader 5 Expert Advisor</span></div>
-    <div class="ticker-item t-sep">|</div>
-    <div class="ticker-item"><span class="t-sym">ASSET</span><span class="t-val">Gold / XAUUSD</span></div>
+<div class="hero">
+  <h1>Automated <span>Gold Trading</span><br>Running 24/5</h1>
+  <p class="subtitle">Watch Cortex TickBot trade live. Join our channel to see real performance or message us for any questions.</p>
+  <div class="cards">
+    <a href="https://t.me/+2O3_XlJrRSkxOGVl" target="_blank" class="card card-investor">
+      <div class="card-icon">👁️</div>
+      <div class="card-text">
+        <div class="card-title">View Live Account</div>
+        <div class="card-desc">See real-time performance on our Telegram</div>
+      </div>
+      <div class="card-arrow">→</div>
+    </a>
+    <a href="https://t.me/+2O3_XlJrRSkxOGVl" target="_blank" class="card card-channel">
+      <div class="card-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="#279CD9"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+      </div>
+      <div class="card-text">
+        <div class="card-title">Join Telegram Channel</div>
+        <div class="card-desc">Live trade updates & performance</div>
+      </div>
+      <div class="card-arrow">→</div>
+    </a>
+    <a href="https://t.me/cortextickbot" target="_blank" class="card card-dm">
+      <div class="card-icon">💬</div>
+      <div class="card-text">
+        <div class="card-title">Message Us</div>
+        <div class="card-desc">Questions about pricing or setup</div>
+      </div>
+      <div class="card-arrow">→</div>
+    </a>
   </div>
 </div>
-
-<!-- HERO -->
-<section style="position:relative; z-index:1; background: var(--bg);">
-  <div class="hero">
-    <div class="hero-glow"></div>
-    <div class="hero-glow2"></div>
-
-    <div class="hero-left" style="position:relative; z-index:1;">
-      <div class="hero-label">
-        <span style="width:6px;height:6px;background:var(--green);border-radius:50%;animation:blink 1.8s infinite;"></span>
-        MT5 Expert Advisor · XAUUSD Gold
-      </div>
-      <h1>Trade Gold.<br><em>Fully Automated.</em><br>24/5 Non-Stop.</h1>
-      <p class="hero-desc">
-        Cortex TickBot is a professional-grade MetaTrader 5 Expert Advisor built exclusively for XAUUSD. Watch live trades happen in real time — no promises, just transparent performance.
-      </p>
-      <div class="hero-btns">
-        <a href="https://t.me/+2O3_XlJrRSkxOGVl" target="_blank" class="btn-gold">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
-          Join Our Channel
-        </a>
-        <a href="https://t.me/cortextickbot" target="_blank" class="btn-outline">
-          Message Us Directly →
-        </a>
-      </div>
-    </div>
-
-    <div class="hero-right">
-      <div class="video-card">
-        <div class="video-top-bar">
-          <div class="video-dots">
-            <div class="dot dot-r"></div>
-            <div class="dot dot-y"></div>
-            <div class="dot dot-g"></div>
-          </div>
-          <div class="video-title-bar">cortextickbot · live_performance.mp4</div>
-          <div class="video-live">LIVE</div>
-        </div>
-        <div class="video-embed">
-          <!--
-            ══════════════════════════════════════════
-            PASTE YOUR YOUTUBE SHORT EMBED URL HERE:
-            Replace this comment block with:
-            <iframe 
-              src="https://www.youtube.com/embed/YOUR_VIDEO_ID"
-              allow="autoplay; encrypted-media"
-              allowfullscreen>
-            </iframe>
-            ══════════════════════════════════════════
-          -->
-          <div class="chart-placeholder">
-            <div class="placeholder-candles">
-              <div class="candle up" style="height:55px;animation-delay:0s"></div>
-              <div class="candle dn" style="height:38px;animation-delay:0.2s"></div>
-              <div class="candle up" style="height:72px;animation-delay:0.4s"></div>
-              <div class="candle up" style="height:60px;animation-delay:0.6s"></div>
-              <div class="candle dn" style="height:44px;animation-delay:0.8s"></div>
-              <div class="candle up" style="height:85px;animation-delay:1.0s"></div>
-              <div class="candle up" style="height:95px;animation-delay:1.2s"></div>
-              <div class="candle dn" style="height:50px;animation-delay:1.4s"></div>
-              <div class="candle up" style="height:78px;animation-delay:1.6s"></div>
-            </div>
-            <div class="placeholder-text">
-              <h4>Live Trade Video</h4>
-              <p>Your YouTube Short will appear here</p>
-              <div class="replace-note">// swap with your YouTube embed</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="mini-stats">
-        <div class="mini-stat">
-          <div class="mini-stat-val">+23.6%</div>
-          <div class="mini-stat-label">Return '25</div>
-        </div>
-        <div class="mini-stat">
-          <div class="mini-stat-val">21</div>
-          <div class="mini-stat-label">Grid Levels</div>
-        </div>
-        <div class="mini-stat">
-          <div class="mini-stat-val">M5</div>
-          <div class="mini-stat-label">Timeframe</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- STATS STRIP -->
-<div class="stats-strip">
-  <div class="stat-block">
-    <div class="stat-num gold">+23.59%</div>
-    <div class="stat-desc">Backtest Return<br>Jan – Nov 2025</div>
-  </div>
-  <div class="stat-block">
-    <div class="stat-num green">+$2,359</div>
-    <div class="stat-desc">Total Profit<br>11 Months</div>
-  </div>
-  <div class="stat-block">
-    <div class="stat-num">21</div>
-    <div class="stat-desc">Grid Levels<br>Auto Lot Sizing</div>
-  </div>
-  <div class="stat-block">
-    <div class="stat-num">$2</div>
-    <div class="stat-desc">Grid Spacing<br>Per Level · XAUUSD</div>
-  </div>
-</div>
-
-<!-- PERFORMANCE -->
-<div class="perf-wrap">
-  <div class="perf-inner" id="performance">
-    <div>
-      <div class="section-eyebrow">
-        <div class="eyebrow-line"></div>
-        <div class="eyebrow-text">Backtested Results</div>
-      </div>
-      <h2 class="section-h2">Consistent Monthly<br>Performance</h2>
-      <p class="section-sub">11 months of backtested data on XAUUSD. Real numbers, no manipulation. Grid system designed for steady compounding.</p>
-
-      <div class="perf-chart-box">
-        <div class="chart-header">
-          <div class="chart-header-left">
-            <div class="chart-sym">XAUUSD · Monthly USC Profit</div>
-            <div class="chart-period">January – November 2025 · Backtest</div>
-          </div>
-          <div class="chart-return">+23.59%</div>
-        </div>
-        <div class="chart-body">
-          <div class="bars-container">
-            <div class="bar-col"><div class="bar-fill" style="height:42%" data-val="+$180"></div><div class="bar-month">Jan</div></div>
-            <div class="bar-col"><div class="bar-fill" style="height:58%" data-val="+$245"></div><div class="bar-month">Feb</div></div>
-            <div class="bar-col"><div class="bar-fill" style="height:36%" data-val="+$152"></div><div class="bar-month">Mar</div></div>
-            <div class="bar-col"><div class="bar-fill" style="height:68%" data-val="+$288"></div><div class="bar-month">Apr</div></div>
-            <div class="bar-col"><div class="bar-fill" style="height:54%" data-val="+$228"></div><div class="bar-month">May</div></div>
-            <div class="bar-col"><div class="bar-fill" style="height:75%" data-val="+$318"></div><div class="bar-month">Jun</div></div>
-            <div class="bar-col"><div class="bar-fill" style="height:62%" data-val="+$262"></div><div class="bar-month">Jul</div></div>
-            <div class="bar-col"><div class="bar-fill" style="height:88%" data-val="+$372"></div><div class="bar-month">Aug</div></div>
-            <div class="bar-col"><div class="bar-fill" style="height:70%" data-val="+$296"></div><div class="bar-month">Sep</div></div>
-            <div class="bar-col"><div class="bar-fill" style="height:84%" data-val="+$355"></div><div class="bar-month">Oct</div></div>
-            <div class="bar-col"><div class="bar-fill" style="height:100%" data-val="+$423"></div><div class="bar-month">Nov</div></div>
-          </div>
-        </div>
-        <div class="chart-footer">
-          <div class="chart-leg"><div class="leg-dot"></div>Monthly Profit (USC)</div>
-          <div class="chart-leg" style="color:var(--text3);">Hover bars for values</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="perf-right">
-      <div class="perf-highlight">
-        <div class="ph-label">Strategy · Phase 1</div>
-        <div class="ph-val">Levels 1–10</div>
-        <div class="ph-desc">Each level targets the weighted average price + $2. Lots progress from 0.01 up through the grid to recover and profit efficiently.</div>
-      </div>
-      <div class="perf-highlight">
-        <div class="ph-label">Strategy · Phase 2</div>
-        <div class="ph-val">Levels <span>11–21</span></div>
-        <div class="ph-desc">Deep recovery mode. Phase 2 targets a flat 100 USC total profit per completed cycle, regardless of entry depth.</div>
-      </div>
-      <div class="perf-highlight">
-        <div class="ph-label">Lot Progression</div>
-        <div class="ph-val">0.01 → 152</div>
-        <div class="ph-desc">Automatic lot sizing across all 21 grid levels. Formula: Price × Lots × 100 = USC profit. No manual input required.</div>
-      </div>
-      <div class="perf-highlight">
-        <div class="ph-label">Backtest Capital</div>
-        <div class="ph-val">1,000,000 USC</div>
-        <div class="ph-desc">Minimum recommended capital for running the full 21-level grid strategy. VPS hosting included for 24/5 uptime.</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- HOW IT WORKS -->
-<section class="section">
-  <div class="section-eyebrow">
-    <div class="eyebrow-line"></div>
-    <div class="eyebrow-text">How It Works</div>
-  </div>
-  <h2 class="section-h2">Set Up Once.<br>Trade Forever.</h2>
-  <p class="section-sub">Three simple steps to get Cortex TickBot running on your MT5 account.</p>
-
-  <div class="steps-grid">
-    <div class="step-card">
-      <div class="step-num-bg">01</div>
-      <div class="step-icon-wrap">⚙️</div>
-      <h3>Install the EA</h3>
-      <p>We provide the Cortex TickBot .ex5 file. Install it on MetaTrader 5, attach it to your XAUUSD M5 chart, and configure your lot size preferences.</p>
-    </div>
-    <div class="step-card">
-      <div class="step-num-bg">02</div>
-      <div class="step-icon-wrap">🔐</div>
-      <h3>Activate Your License</h3>
-      <p>Your EA is protected with a unique license key tied to your MT5 account. We validate it instantly via our secure license server — no sharing, no piracy.</p>
-    </div>
-    <div class="step-card">
-      <div class="step-num-bg">03</div>
-      <div class="step-icon-wrap">📈</div>
-      <h3>Let It Trade 24/5</h3>
-      <p>The bot opens, manages, and closes trades automatically. Host it on a VPS for uninterrupted trading — no need to keep your PC on.</p>
-    </div>
-  </div>
-</section>
-
-<!-- CTA -->
-<div class="cta-wrap">
-  <div class="cta-glow"></div>
-  <div class="cta-inner">
-    <div class="cta-left">
-      <div class="section-eyebrow">
-        <div class="eyebrow-line"></div>
-        <div class="eyebrow-text">Get Started</div>
-      </div>
-      <h2>Ready to See It<br><em>Trade Live?</em></h2>
-      <p>Join our Telegram channel to watch real-time trades, or message us directly for any questions about the EA, pricing, or setup.</p>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;">
-        <a href="https://t.me/+2O3_XlJrRSkxOGVl" target="_blank" class="btn-gold">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
-          Join Channel
-        </a>
-        <a href="https://t.me/cortextickbot" target="_blank" class="btn-outline">DM Us →</a>
-      </div>
-    </div>
-
-    <div class="cta-cards">
-      <a href="https://t.me/+2O3_XlJrRSkxOGVl" target="_blank" class="cta-card">
-        <div class="cta-card-icon tg-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="#279CD9"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
-        </div>
-        <div class="cta-card-text">
-          <div class="cta-card-title">Telegram Channel</div>
-          <div class="cta-card-desc">Watch live trades & performance updates</div>
-        </div>
-        <div class="cta-card-arrow">→</div>
-      </a>
-
-      <a href="https://t.me/cortextickbot" target="_blank" class="cta-card">
-        <div class="cta-card-icon dm-icon">💬</div>
-        <div class="cta-card-text">
-          <div class="cta-card-title">Direct Message</div>
-          <div class="cta-card-desc">Ask us anything — pricing, setup, support</div>
-        </div>
-        <div class="cta-card-arrow">→</div>
-      </a>
-    </div>
-  </div>
-</div>
-
-<!-- FOOTER -->
 <footer>
-  <div class="footer-inner">
-    <div class="footer-top">
-      <div class="footer-logo">CORTEX TICKBOT © 2025</div>
-      <div class="footer-links">
-        <a href="https://t.me/+2O3_XlJrRSkxOGVl" target="_blank">Telegram Channel</a>
-        <a href="https://t.me/cortextickbot" target="_blank">Direct Message</a>
-      </div>
-    </div>
-    <div class="disclaimer-box">
-      <div class="disclaimer-title">Risk Disclaimer</div>
-      <div class="disclaimer-text">
-        Trading in foreign exchange (Forex), gold (XAUUSD), and other financial instruments carries a high level of risk and may not be suitable for all investors. Past performance and backtested results shown on this page are not indicative of future results. The information presented here is for informational purposes only and does not constitute financial advice, investment advice, or any solicitation to buy or sell financial instruments. Cortex TickBot is sold as automated trading software only. You trade at your own risk. Please consult a qualified financial advisor before making any investment decisions. Capital can be lost.
-      </div>
-    </div>
+  <div class="disclaimer">
+    ⚠ Risk Disclaimer: Past performance is not indicative of future results. Trading involves substantial risk of loss. This is not financial advice. Trade at your own risk.
   </div>
 </footer>
-
 </body>
 </html>
